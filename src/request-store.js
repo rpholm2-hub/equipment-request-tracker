@@ -20,6 +20,9 @@ export function validateRequest(input = {}) {
   if (!clean(input.equipment)) errors.equipment = "Enter the equipment needed.";
   if (!clean(input.neededBy)) errors.neededBy = "Select the date needed.";
   if (!clean(input.reason)) errors.reason = "Enter a business reason.";
+  if (input.priority !== undefined && !["Low", "Normal", "High"].includes(clean(input.priority))) {
+    errors.priority = "Select Low, Normal, or High.";
+  }
 
   return errors;
 }
@@ -42,6 +45,7 @@ export function createRequest(input, options = {}) {
     requester: clean(input.requester),
     department: clean(input.department),
     equipment: clean(input.equipment),
+    priority: input.priority === undefined ? "Normal" : clean(input.priority),
     neededBy: clean(input.neededBy),
     reason: clean(input.reason),
     createdAt: now.toISOString(),
@@ -60,7 +64,12 @@ export function loadRequests(storage = globalThis.localStorage) {
     if (!stored) return [];
 
     const parsed = JSON.parse(stored);
-    return Array.isArray(parsed) ? parsed.filter(isRequestRecord) : [];
+    return Array.isArray(parsed)
+      ? parsed.filter(isRequestRecord).map((request) => ({
+          ...request,
+          priority: request.priority ?? "Normal",
+        }))
+      : [];
   } catch {
     return [];
   }
