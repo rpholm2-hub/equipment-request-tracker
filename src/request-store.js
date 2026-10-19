@@ -56,7 +56,13 @@ export function appendRequest(requests, request) {
   return [request, ...requests];
 }
 
-export function loadRequests(storage = globalThis.localStorage) {
+export function filterRequestsByPriority(requests, priority = "All") {
+  return priority === "All" || !priority
+    ? [...requests]
+    : requests.filter((request) => request.priority === priority);
+}
+
+export function loadRequests(storage = globalThis.localStorage, { preserveMissingPriority = false } = {}) {
   if (!storage) return [];
 
   try {
@@ -67,7 +73,7 @@ export function loadRequests(storage = globalThis.localStorage) {
     return Array.isArray(parsed)
       ? parsed.filter(isRequestRecord).map((request) => ({
           ...request,
-          priority: request.priority ?? "Normal",
+          ...(!preserveMissingPriority && { priority: request.priority ?? "Normal" }),
         }))
       : [];
   } catch {

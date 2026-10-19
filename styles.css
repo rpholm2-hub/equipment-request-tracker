@@ -209,6 +209,32 @@ button:hover {
   font-weight: 800;
 }
 
+.priority-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.priority-filters p {
+  flex-basis: 100%;
+  margin-bottom: 0;
+  font-weight: 750;
+}
+
+.priority-filters button {
+  width: auto;
+  color: var(--purple-dark);
+  background: var(--purple-light);
+  border: 2px solid transparent;
+}
+
+.priority-filters button[aria-pressed="true"] {
+  color: #fff;
+  background: var(--purple);
+  border-color: var(--purple-dark);
+}
+
 .empty-state {
   padding: 2.5rem 1rem;
   text-align: center;

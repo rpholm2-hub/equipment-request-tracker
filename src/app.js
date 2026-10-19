@@ -2,6 +2,7 @@ import {
   RequestValidationError,
   appendRequest,
   createRequest,
+  filterRequestsByPriority,
   loadRequests,
   saveRequests,
 } from "./request-store.js";
@@ -13,11 +14,24 @@ const count = document.querySelector("#request-count");
 const emptyState = document.querySelector("#empty-state");
 const tableWrapper = document.querySelector("#request-table-wrapper");
 const tableBody = document.querySelector("#request-table-body");
+const priorityFilters = document.querySelector("#priority-filters");
 
-let requests = loadRequests();
+// Keep absent priorities distinguishable for filtering; display legacy records as Normal.
+let requests = loadRequests(globalThis.localStorage, { preserveMissingPriority: true });
+let activePriority = "All";
 
 neededByInput.min = new Date().toISOString().slice(0, 10);
 renderRequests();
+
+priorityFilters.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-priority]");
+  if (!button) return;
+  activePriority = button.dataset.priority;
+  for (const filter of priorityFilters.querySelectorAll("button")) {
+    filter.setAttribute("aria-pressed", String(filter === button));
+  }
+  renderRequests();
+});
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -48,11 +62,18 @@ form.addEventListener("submit", (event) => {
 });
 
 function renderRequests() {
-  const hasRequests = requests.length > 0;
-  count.textContent = `${requests.length} ${requests.length === 1 ? "request" : "requests"}`;
+  const visibleRequests = filterRequestsByPriority(requests, activePriority);
+  const hasRequests = visibleRequests.length > 0;
+  count.textContent = `${visibleRequests.length} ${visibleRequests.length === 1 ? "request" : "requests"}`;
+  emptyState.querySelector("h3").textContent = activePriority === "All"
+    ? "No requests yet"
+    : "No requests found for this priority";
+  emptyState.querySelector("p").textContent = activePriority === "All"
+    ? "Add the first equipment request using the form."
+    : 'Select "All" to view all requests.';
   emptyState.hidden = hasRequests;
   tableWrapper.hidden = !hasRequests;
-  tableBody.replaceChildren(...requests.map(createRequestRow));
+  tableBody.replaceChildren(...visibleRequests.map(createRequestRow));
 }
 
 function createRequestRow(request) {
@@ -61,7 +82,7 @@ function createRequestRow(request) {
     request.requester,
     request.department,
     request.equipment,
-    request.priority,
+    request.priority ?? "Normal",
     formatDate(request.neededBy),
     request.reason,
     formatDateTime(request.createdAt),
