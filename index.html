@@ -103,7 +103,15 @@
           <p id="request-count" class="request-count">0 requests</p>
         </div>
 
-        <div id="empty-state" class="empty-state">
+        <div id="priority-filters" class="priority-filters" role="group" aria-labelledby="priority-filter-label">
+          <p id="priority-filter-label">Filter by priority</p>
+          <button type="button" data-priority="All" aria-pressed="true">All</button>
+          <button type="button" data-priority="Low" aria-pressed="false">Low</button>
+          <button type="button" data-priority="Normal" aria-pressed="false">Normal</button>
+          <button type="button" data-priority="High" aria-pressed="false">High</button>
+        </div>
+
+        <div id="empty-state" class="empty-state" role="status">
           <h3>No requests yet</h3>
           <p>Add the first equipment request using the form.</p>
         </div>

@@ -6,6 +6,7 @@ import {
   STORAGE_KEY,
   appendRequest,
   createRequest,
+  filterRequestsByPriority,
   loadRequests,
   saveRequests,
 } from "../src/request-store.js";
@@ -121,4 +122,39 @@ test("legacy requests default to Normal without losing data", () => {
 
   saveRequests(appendRequest(loaded, createRequest({ ...validInput, priority: "High" })), storage);
   assert.deepEqual(loadRequests(storage)[1], { ...legacyRequest, priority: "Normal" });
+});
+
+test("priority filtering matches exactly, preserves order, and resets without mutation", () => {
+  const requests = Object.freeze([
+    Object.freeze({ id: "high-1", priority: "High" }),
+    Object.freeze({ id: "legacy" }),
+    Object.freeze({ id: "low", priority: "Low" }),
+    Object.freeze({ id: "high-2", priority: "High" }),
+  ]);
+  const snapshot = JSON.stringify(requests);
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    assert.deepEqual(filterRequestsByPriority(requests, "High").map(({ id }) => id), ["high-1", "high-2"]);
+    assert.deepEqual(filterRequestsByPriority(requests, "Low"), [requests[2]]);
+    assert.deepEqual(filterRequestsByPriority(requests, "Normal"), []);
+    for (const reset of ["All", "", undefined]) {
+      assert.deepEqual(filterRequestsByPriority(requests, reset), requests);
+    }
+  }
+  assert.equal(JSON.stringify(requests), snapshot);
+  assert.deepEqual(filterRequestsByPriority([], "High"), []);
+});
+
+test("filtering loaded legacy records excludes missing priorities without changing storage", () => {
+  const storage = new MemoryStorage();
+  const legacy = createRequest(validInput, { id: "legacy" });
+  delete legacy.priority;
+  const normal = createRequest({ ...validInput, priority: "Normal" }, { id: "normal" });
+  saveRequests([legacy, normal], storage);
+  const original = storage.getItem(STORAGE_KEY);
+  const loaded = loadRequests(storage, { preserveMissingPriority: true });
+
+  assert.deepEqual(filterRequestsByPriority(loaded, "All"), [legacy, normal]);
+  assert.deepEqual(filterRequestsByPriority(loaded, "Normal"), [normal]);
+  assert.equal(storage.getItem(STORAGE_KEY), original);
 });
