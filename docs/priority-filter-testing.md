@@ -54,12 +54,14 @@ Evidence sources:
   testing was performed by the assistant for this update.
 
 **Status convention:** Pass means the cited evidence supports the criterion.
-All 10 criteria are now Pass based on the automated and manual evidence below;
-this does not imply that every suggested test procedure was performed.
+Nine criteria are Pass based on the automated and historical manual evidence
+below. Criterion 1 is Partial: code and store tests support it, but the reported
+browser results do not explicitly establish initial selection and full row order.
+Partial identifies missing verification evidence, not a confirmed code defect.
 
 | Acceptance criterion | Status | Automated evidence | Manual evidence and limits |
 | --- | --- | --- | --- |
-| 1. Initial view | **Pass** | All/default filtering returns the complete list in original order; storage round-trip tests preserve records. | All filtering and request preservation after refresh verified on Windows. The report does not separately describe checking the initial active button and full row order; reconfirm those in the final walkthrough. |
+| 1. Initial view | **Partial** | All/default filtering returns the complete list in original order; storage round-trip tests preserve records. | All filtering and request preservation after refresh verified on Windows. The report does not separately describe checking the initial active button and full row order; reconfirm those in the final walkthrough. |
 | 2. Matching results | **Pass** | Exact-match filtering assertions cover High and Low; priority persistence tests cover Low, Normal, and High. | Low, Normal, and High filtering verified on Windows. |
 | 3. Switching priorities | **Pass** | Repeated High/Low filtering preserves the relative order of matching records. | Switching among priority filters verified on Windows; row-order assertions are automated evidence. |
 | 4. Empty results | **Pass** | An unmatched priority returns an empty array. | Empty-results handling verified on Windows. |
